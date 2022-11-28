@@ -27,6 +27,7 @@ export default defineConfig({
     ['box', 'rounded-lg border border-cyan-500 border-opacity-20'],
     ['btn', 'text-white text-opacity-70 text-center px-2 py-1 rounded bg-#21354e hover:bg-#273f5c'],
     ['btn--gradient', 'text-white bg-gradient-to-br from-#2084dd to-#1dbeda hover:bg-gradient-to-tl'],
+    ['btn--disabled', 'cursor-not-allowed !bg-none !bg-#21354e opacity-50'],
     ['input', 'bg-transparent text-center outline-none text-xl font-700 w-full'],
   ],
   presets: [

@@ -39,7 +39,7 @@ export default function useNumberInput (
     // allow arrows, backspace, delete, tab, enter, escape, number
     const allowKeys = [
       'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Delete', 'Backspace', 'Tab', 'Enter', 'Escape',
-      '0', '1', '2', '3', '4', '5', '6', '7', '9',
+      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
     ];
 
     // allow dot

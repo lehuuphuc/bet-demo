@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { addDecimal, getNumberValue } from '@/helpers/utils';
 import useNumberInput from '@/composables/useNumberInput';
 
 const betValues = [5, 10, 50, 100, 500, 1000];
 const defuseValues = [1.5, 2, 5];
+const isSubmitted = ref(false);
 const betInput = ref<null | HTMLInputElement>(null);
 const {
   min: betMinAmount,
@@ -21,6 +22,8 @@ const {
   decimals: 0,
 });
 const {
+  min: defuseMinAmount,
+  max: defuseMaxAmount,
   value: defuseAmount,
   setValue: setDefuseAmount,
   formattedValue: defuseFormattedValue,
@@ -32,6 +35,10 @@ const {
   max: 100,
   decimals: 2,
 });
+const defuseIncreaseValue = computed(() =>
+  (getNumberValue(defuseAmount.value) >= 2 ? 1 : 0.1));
+const shouldDisableBtnDecreaseDefuse = computed(() => defuseAmount.value === defuseMinAmount);
+const shouldDisableBtnIncreaseDefuse = computed(() => defuseAmount.value === defuseMaxAmount);
 
 function shortenNumber (num: number) {
   if (num < 1000) {
@@ -39,6 +46,20 @@ function shortenNumber (num: number) {
   }
 
   return `${Math.floor(num / 1000)}K`;
+}
+
+function shouldDisableAddBetValue (betValue: number) {
+  const result = getNumberValue(betAmount.value) + betValue;
+
+  if (typeof betMaxAmount === 'number' && result >= betMaxAmount) {
+    return true;
+  }
+
+  if (typeof betMinAmount === 'number' && result <= betMinAmount) {
+    return true;
+  }
+
+  return false;
 }
 
 onMounted(() => {
@@ -58,10 +79,20 @@ onMounted(() => {
         <div class="flex flex-center p-3 gap-2">
           <!-- min max -->
           <div class="flex flex-col flex-center gap-2">
-            <button class="btn w-14" @click="setBetAmount(betMinAmount, true)">
+            <button
+              :disabled="isSubmitted"
+              class="btn w-14"
+              :class="{ 'btn--disabled': isSubmitted }"
+              @click="setBetAmount(betMinAmount, true)"
+            >
               MIN
             </button>
-            <button class="btn w-14" @click="setBetAmount(betMaxAmount, true)">
+            <button
+              :disabled="isSubmitted"
+              class="btn w-14"
+              :class="{ 'btn--disabled': isSubmitted }"
+              @click="setBetAmount(betMaxAmount, true)"
+            >
               MAX
             </button>
           </div>
@@ -74,7 +105,9 @@ onMounted(() => {
               ref="betInput"
               v-model="betFormattedValue"
               type="text"
+              :disabled="isSubmitted"
               class="input"
+              :class="{ 'input--disabled': isSubmitted }"
               maxlength="4"
               @keydown="handleBetInputKeyDown"
               @input="setBetAmount(($event?.target as HTMLInputElement)?.value)"
@@ -86,13 +119,17 @@ onMounted(() => {
           <!-- 1/2 2X -->
           <div class="flex flex-col flex-center gap-2">
             <button
+              :disabled="isSubmitted"
               class="btn w-14 text-white text-opacity-60"
+              :class="{ 'btn--disabled': isSubmitted }"
               @click="setBetAmount(getNumberValue(betAmount) / 2, true)"
             >
               1/2
             </button>
             <button
+              :disabled="isSubmitted"
               class="btn w-14 text-white text-opacity-60"
+              :class="{ 'btn--disabled': isSubmitted }"
               @click="setBetAmount(getNumberValue(betAmount) * 2, true)"
             >
               2X
@@ -105,7 +142,11 @@ onMounted(() => {
             v-for="betValue in betValues"
             :key="betValue"
             class="btn flex-1 text-cyan-400 text-opacity-70"
-            :class="betValue >= 1000 ? 'md:(display-none)' : ''"
+            :class="{
+              'md:(display-none)': betValue >= 1000,
+              'btn--disabled': isSubmitted || shouldDisableAddBetValue(betValue),
+            }"
+            :disabled="isSubmitted || shouldDisableAddBetValue(betValue)"
             @click="setBetAmount(getNumberValue(betAmount) + betValue, true)"
           >
             {{ `+${shortenNumber(betValue)}` }}
@@ -121,15 +162,19 @@ onMounted(() => {
           </div>
           <div class="basis-1/2 flex flex-center">
             <button
+              :disabled="isSubmitted || shouldDisableBtnDecreaseDefuse"
               class="btn w-8"
+              :class="{ 'btn--disabled': isSubmitted || shouldDisableBtnDecreaseDefuse }"
               @click="setDefuseAmount(addDecimal(getNumberValue(defuseAmount), -0.1), true)"
             >
               -
             </button>
             <input
               v-model="defuseFormattedValue"
+              :disabled="isSubmitted"
               type="text"
               class="input"
+              :class="{ 'input--disabled': isSubmitted }"
               maxlength="6"
               @keydown="handleDefuseInputKeyDown"
               @input="setDefuseAmount(($event?.target as HTMLInputElement)?.value)"
@@ -138,8 +183,10 @@ onMounted(() => {
               @paste="handleDefuseInputPaste"
             >
             <button
+              :disabled="isSubmitted || shouldDisableBtnIncreaseDefuse"
               class="btn w-8"
-              @click="setDefuseAmount(addDecimal(getNumberValue(defuseAmount), (getNumberValue(defuseAmount) >= 2 ? 1 : 0.1)), true)"
+              :class="{ 'btn--disabled': isSubmitted || shouldDisableBtnIncreaseDefuse }"
+              @click="setDefuseAmount(addDecimal(getNumberValue(defuseAmount), defuseIncreaseValue), true)"
             >
               +
             </button>
@@ -150,7 +197,9 @@ onMounted(() => {
           <button
             v-for="defuseValue in defuseValues"
             :key="defuseValue"
+            :disabled="isSubmitted"
             class="btn flex-1"
+            :class="{ 'btn--disabled': isSubmitted }"
             @click="setDefuseAmount(defuseValue, true)"
           >
             {{ `${defuseValue.toFixed(1)}x` }}
@@ -158,10 +207,13 @@ onMounted(() => {
         </div>
       </div>
       <button
+        :disabled="isSubmitted"
         class="btn btn--gradient rounded-lg w-full h-20 text-xl font-700
         md:(basis-1/4 h-auto)"
+        :class="{ 'btn--disabled': isSubmitted }"
+        @click="isSubmitted = true"
       >
-        BET
+        {{ isSubmitted ? 'BET PLACED' : 'BET' }}
       </button>
     </div>
   </div>
