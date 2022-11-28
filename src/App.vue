@@ -1,9 +1,14 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue';
+import { addDecimal, getNumberValue } from '@/helpers/utils';
 import useNumberInput from '@/composables/useNumberInput';
 
 const betValues = [5, 10, 50, 100, 500, 1000];
 const defuseValues = [1.5, 2, 5];
+const betInput = ref<null | HTMLInputElement>(null);
 const {
+  min: betMinAmount,
+  max: betMaxAmount,
   value: betAmount,
   setValue: setBetAmount,
   formattedValue: betFormattedValue,
@@ -35,6 +40,14 @@ function shortenNumber (num: number) {
 
   return `${Math.floor(num / 1000)}K`;
 }
+
+onMounted(() => {
+  if (!betInput.value) {
+    return;
+  }
+
+  betInput.value?.focus();
+});
 </script>
 
 <template>
@@ -45,10 +58,10 @@ function shortenNumber (num: number) {
         <div class="flex flex-center p-3 gap-2">
           <!-- min max -->
           <div class="flex flex-col flex-center gap-2">
-            <button class="btn w-14">
+            <button class="btn w-14" @click="setBetAmount(betMinAmount, true)">
               MIN
             </button>
-            <button class="btn w-14">
+            <button class="btn w-14" @click="setBetAmount(betMaxAmount, true)">
               MAX
             </button>
           </div>
@@ -58,6 +71,7 @@ function shortenNumber (num: number) {
               ¥
             </div>
             <input
+              ref="betInput"
               v-model="betFormattedValue"
               type="text"
               class="input"
@@ -71,10 +85,16 @@ function shortenNumber (num: number) {
           </div>
           <!-- 1/2 2X -->
           <div class="flex flex-col flex-center gap-2">
-            <button class="btn w-14 text-white text-opacity-60">
+            <button
+              class="btn w-14 text-white text-opacity-60"
+              @click="setBetAmount(getNumberValue(betAmount) / 2, true)"
+            >
               1/2
             </button>
-            <button class="btn w-14 ">
+            <button
+              class="btn w-14 text-white text-opacity-60"
+              @click="setBetAmount(getNumberValue(betAmount) * 2, true)"
+            >
               2X
             </button>
           </div>
@@ -86,6 +106,7 @@ function shortenNumber (num: number) {
             :key="betValue"
             class="btn flex-1 text-cyan-400 text-opacity-70"
             :class="betValue >= 1000 ? 'md:(display-none)' : ''"
+            @click="setBetAmount(getNumberValue(betAmount) + betValue, true)"
           >
             {{ `+${shortenNumber(betValue)}` }}
           </button>
@@ -101,8 +122,9 @@ function shortenNumber (num: number) {
           <div class="basis-1/2 flex flex-center">
             <button
               class="btn w-8"
+              @click="setDefuseAmount(addDecimal(getNumberValue(defuseAmount), -0.1), true)"
             >
-              +
+              -
             </button>
             <input
               v-model="defuseFormattedValue"
@@ -117,8 +139,9 @@ function shortenNumber (num: number) {
             >
             <button
               class="btn w-8"
+              @click="setDefuseAmount(addDecimal(getNumberValue(defuseAmount), (getNumberValue(defuseAmount) >= 2 ? 1 : 0.1)), true)"
             >
-              -
+              +
             </button>
           </div>
         </div>
@@ -128,6 +151,7 @@ function shortenNumber (num: number) {
             v-for="defuseValue in defuseValues"
             :key="defuseValue"
             class="btn flex-1"
+            @click="setDefuseAmount(defuseValue, true)"
           >
             {{ `${defuseValue.toFixed(1)}x` }}
           </button>

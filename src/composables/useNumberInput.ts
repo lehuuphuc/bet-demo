@@ -1,4 +1,5 @@
-import { computed, nextTick, ref } from 'vue';
+import { computed, ref } from 'vue';
+import { getNumberValue } from '@/helpers/utils';
 
 export default function useNumberInput (
   { defaultValue, min, max, decimals }: {
@@ -66,7 +67,7 @@ export default function useNumberInput (
       return;
     }
 
-    formattedValue.value = localValue.value;
+    formattedValue.value = isWithDecimal ? getNumberValue(localValue.value).toFixed(decimals) : localValue.value;
   }
 
   setValue(defaultValue, true);
