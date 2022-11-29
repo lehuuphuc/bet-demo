@@ -198,7 +198,7 @@ onMounted(() => {
             v-for="defuseValue in defuseValues"
             :key="defuseValue"
             :disabled="isSubmitted"
-            class="btn flex-1"
+            class="btn flex-1 text-cyan-400 text-opacity-70"
             :class="{ 'btn--disabled': isSubmitted }"
             @click="setDefuseAmount(defuseValue, true)"
           >
